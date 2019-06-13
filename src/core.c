@@ -81,4 +81,10 @@ void gc_destroy(void)
             __gc_object.ptr_map[i] = 0;
         }
     }
+
+    for (gc_list_t *e = __gc_object.globals; e; e = e->next) {
+        gc_list_t *tmp = e;
+        free((void *) (e->data.start));
+        free(tmp);
+    }
 }

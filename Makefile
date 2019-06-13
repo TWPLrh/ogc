@@ -12,7 +12,8 @@ deps := $(OBJS:%.o=%.d)
 
 TESTS := \
 	tests/dummy \
-	tests/string-separate
+	tests/string-separate \
+	tests/global_test
 
 tests/%: tests/%.o
 	$(CC) $(CFLAGS) -o $@ $^ $(OBJS)

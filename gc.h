@@ -8,6 +8,7 @@ void *gc_alloc(size_t size);
 void gc_free(void *ptr);
 void gc_run();
 void gc_destroy(void);
+void gc_add_global(size_t, void*);
 
 void gc_dump_internals(void);
 

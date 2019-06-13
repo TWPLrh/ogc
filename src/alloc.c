@@ -22,6 +22,20 @@ void *gc_alloc(size_t size)
     return (void *) ptr;
 }
 
+void gc_add_global(size_t size, void *ptr)
+{
+    if(!ptr) return;
+
+    gc_ptr_t p = (gc_ptr_t){
+        .start = (uintptr_t)ptr,
+        .size = size,
+        .marked = true,
+    };
+
+    gc_list_add(&__gc_object.globals, p);
+
+}
+
 void gc_free(void *ptr)
 {
     gc_list_t *lst = __gc_object.ptr_map[HASH(ptr) % PTR_MAP_SIZE];
