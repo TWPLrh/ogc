@@ -1,6 +1,6 @@
 CFLAGS := \
 	-Wall -std=c11 \
-	-I. -MMD
+	-I. -MMD -lpthread
 
 OBJS := \
 	src/alloc.o \
