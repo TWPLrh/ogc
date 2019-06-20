@@ -1,6 +1,6 @@
 CFLAGS := \
 	-Wall -std=c11 \
-	-I. -MMD -lpthread
+	-I. -MMD -pthread 
 
 OBJS := \
 	src/alloc.o \
@@ -11,6 +11,7 @@ OBJS := \
 deps := $(OBJS:%.o=%.d)
 
 TESTS := \
+	tests/threads \
 	tests/dummy \
 	tests/string-separate \
 	tests/global_test

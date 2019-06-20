@@ -3,10 +3,13 @@
 #include <sys/resource.h>
 
 gc_t __gc_object = (gc_t){.ref_count = 0};
+pthread_mutex_t gc_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void gc_init(void* ptr, size_t limit)
 {
+    pthread_mutex_lock(&gc_lock);
     if (__gc_object.ref_count == THREAD_MAX) {
+        pthread_mutex_unlock(&gc_lock);
         return;
     }
 
@@ -27,6 +30,7 @@ void gc_init(void* ptr, size_t limit)
         __gc_object.stack_start[0] = ptr;
         __gc_object.stack_size[0] = (size_t)limit.rlim_cur;
 */
+        pthread_mutex_unlock(&gc_lock);
         return;
     }
 
@@ -41,6 +45,7 @@ void gc_init(void* ptr, size_t limit)
 	__gc_object.stack_size[__gc_object.ref_count] = stacksize;
     
     __gc_object.ref_count++;
+    pthread_mutex_unlock(&gc_lock);
 }
 
 static inline void swap_ptr(uint8_t **a, uint8_t **b)
@@ -86,12 +91,15 @@ void gc_sweep(void)
 
 void gc_run(void)
 {
+    pthread_mutex_lock(&gc_lock);
     gc_mark_stack();
     gc_sweep();
+    pthread_mutex_unlock(&gc_lock);
 }
 
 void gc_destroy(void)
 {
+    pthread_mutex_lock(&gc_lock);
     __gc_object.ref_count--;
     if (__gc_object.ref_count <= 0) {
         __gc_object.ref_count = 0;
@@ -125,4 +133,5 @@ void gc_destroy(void)
            __gc_object.stack_start[i] = NULL; 
         }
     }
+    pthread_mutex_unlock(&gc_lock);
 }

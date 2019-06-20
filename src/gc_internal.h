@@ -1,5 +1,6 @@
 #ifndef GC_INTERNAL_H
 #define GC_INTERNAL_H
+#define _GNU_SOURCE
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -10,6 +11,8 @@
 #define PTR_MAP_SIZE 64
 #define THREAD_MAX 32
 #define HASH(ptr) ((uintptr_t) ptr >> 3)
+
+extern pthread_mutex_t gc_lock;
 
 struct __gc_ptr {
     uintptr_t start;
