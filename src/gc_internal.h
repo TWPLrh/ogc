@@ -4,9 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "gc.h"
 
 #define PTR_MAP_SIZE 64
+#define THREAD_MAX 32
 #define HASH(ptr) ((uintptr_t) ptr >> 3)
 
 struct __gc_ptr {
@@ -23,7 +25,8 @@ struct __gc_list {
 typedef struct __gc_list gc_list_t;
 
 struct __gc {
-    void *stack_start;
+    void *stack_start[THREAD_MAX];
+    size_t stack_size[THREAD_MAX];
     gc_list_t *ptr_map[PTR_MAP_SIZE];
     size_t ptr_num;
     size_t limit;

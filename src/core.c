@@ -2,20 +2,35 @@
 
 gc_t __gc_object = (gc_t){.ref_count = 0};
 
-void gc_init(void *ptr, size_t limit)
+void gc_init(size_t limit)
 {
-    if (__gc_object.ref_count) {
-        __gc_object.ref_count++;
+    if (__gc_object.ref_count == THREAD_MAX) {
         return;
     }
-    __gc_object = (gc_t){.stack_start = ptr,
-                         .ptr_map = {NULL},
-                         .ptr_num = 0,
-                         .ref_count = 1,
-                         .limit = limit,
-                         .min = UINTPTR_MAX,
-                         .max = 0,
-                         .globals = NULL};
+
+    if(__gc_object.ref_count == 0){
+        __gc_object = (gc_t){.stack_start = {NULL},
+                            .stack_size = {0},
+                            .ptr_map = {NULL},
+                            .ptr_num = 0,
+                            .ref_count = 1,
+                            .limit = limit,
+                            .min = UINTPTR_MAX,
+                            .max = 0,
+                            .globals = NULL};
+    }
+
+    pthread_attr_t attr;
+    void * stackaddr;
+    size_t stacksize;
+
+    pthread_getattr_np(pthread_self(), &attr);
+    pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+
+    __gc_object.stack_start[__gc_object.ref_count] = (uintptr_t)stackaddr;
+	__gc_object.stack_size[__gc_object.ref_count] = stacksize;
+    
+    __gc_object.ref_count++;
 }
 
 static inline void swap_ptr(uint8_t **a, uint8_t **b)
@@ -86,5 +101,18 @@ void gc_destroy(void)
         gc_list_t *tmp = e;
         free((void *) (e->data.start));
         free(tmp);
+    }
+
+    pthread_attr_t attr;
+    void * stackaddr;
+    size_t stacksize;
+
+    pthread_getattr_np(pthread_self(), &attr);
+    pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+
+    for(int i=0; i < __gc_object.ref_count; i++){
+        if(__gc_object.stack_start[i] == stackaddr){
+           __gc_object.stack_start[i] = NULL; 
+        }
     }
 }
