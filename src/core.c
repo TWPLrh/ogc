@@ -1,8 +1,10 @@
 #include "gc_internal.h"
 
+#include <sys/resource.h>
+
 gc_t __gc_object = (gc_t){.ref_count = 0};
 
-void gc_init(size_t limit)
+void gc_init(void* ptr, size_t limit)
 {
     if (__gc_object.ref_count == THREAD_MAX) {
         return;
@@ -18,6 +20,14 @@ void gc_init(size_t limit)
                             .min = UINTPTR_MAX,
                             .max = 0,
                             .globals = NULL};
+/*
+        struct rlimit limit;
+        getrlimit (RLIMIT_STACK, &limit);
+        
+        __gc_object.stack_start[0] = ptr;
+        __gc_object.stack_size[0] = (size_t)limit.rlim_cur;
+*/
+        return;
     }
 
     pthread_attr_t attr;
@@ -27,7 +37,7 @@ void gc_init(size_t limit)
     pthread_getattr_np(pthread_self(), &attr);
     pthread_attr_getstack(&attr, &stackaddr, &stacksize);
 
-    __gc_object.stack_start[__gc_object.ref_count] = (uintptr_t)stackaddr;
+    __gc_object.stack_start[__gc_object.ref_count] = stackaddr;
 	__gc_object.stack_size[__gc_object.ref_count] = stacksize;
     
     __gc_object.ref_count++;

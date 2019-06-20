@@ -10,7 +10,7 @@ void *foo1(void *param)
 {
     int i = 1;
 
-    gc_init(1);
+    gc_init(&param, 1);
 
     gc_add_global(sizeof(aaa), aaa);
     gc_add_global(sizeof(bbb), bbb);
@@ -39,7 +39,7 @@ void *foo2(void * param)
 {
     int i = 1;
 
-    gc_init(1);
+    gc_init(&param, 1);
     
     while(i++)
     {
@@ -56,22 +56,22 @@ void *foo2(void * param)
 
 int main(int argc, char* argv[])
 {
-    //gc_init(&argc, 1);
+    /*gc_init(&argc, 1);
     
-    //void *ptr = gc_alloc(20);
-    //gc_dump_internals();
-    //ptr = NULL;
-    //*ptr = gc_alloc(25);
-    //gc_dump_internals();
-    //gc_destroy();
-
+    void *ptr = gc_alloc(20);
+    gc_dump_internals();
+    ptr = NULL;
+    *ptr = gc_alloc(25);
+    gc_dump_internals();
+    gc_destroy();
+*/
 
     pthread_t t1;
-    //pthread_t t2;
+    pthread_t t2;
     pthread_create(&t1, NULL, foo1, NULL);
-    //pthread_create(&t2, NULL, foo2, NULL);
+    pthread_create(&t2, NULL, foo2, NULL);
     pthread_join(t1, NULL);
-    //pthread_join(t2, NULL);
+    pthread_join(t2, NULL);
 
     return 0;
 }
