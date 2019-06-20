@@ -20,7 +20,11 @@ void *gc_alloc(size_t size)
     gc_list_add(&__gc_object.ptr_map[HASH(ptr) % PTR_MAP_SIZE], p);
     __gc_object.ptr_num++;
     if (__gc_object.ptr_num >= __gc_object.limit)
+    {
+        pthread_mutex_unlock(&gc_lock);
         gc_run();
+        pthread_mutex_lock(&gc_lock);
+    }
     pthread_mutex_unlock(&gc_lock);
     return (void *) ptr;
 }
